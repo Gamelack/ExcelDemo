@@ -62,4 +62,5 @@ class Test3():
         data = df.iloc[[1, 2]].values  # 读取指定多行的话，就要在ix[]里面嵌套列表指定行数
         print("读取指定行的数据：\n{0}".format(data))
 temp = Test3()
+
 temp.test1()
