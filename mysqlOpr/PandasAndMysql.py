@@ -32,13 +32,13 @@ class Test1():
 
 class Test2():
     def test1(self):
-        df = pd.read_excel('F:\\Profile\\User\Desktop\\2018全国医院信息化建设标准与规范(试行).xls')  # 这个会直接默认读取到这个Excel的第一个表单
+        df = pd.read_excel('2018全国医院信息化建设标准与规范(试行).xls')  # 这个会直接默认读取到这个Excel的第一个表单
         data = df.head()  # 默认读取前5行的数据
         print("获取到所有的值:\n{0}".format(data))  # 格式化输出
 
     def test2(self):
         # 方法二：通过指定表单名的方式来读取
-        df = pd.read_excel('F:\\Profile\\User\Desktop\\2018全国医院信息化建设标准与规范(试行).xls',
+        df = pd.read_excel('2018全国医院信息化建设标准与规范(试行).xls',
                            sheet_name='Sheet1')  # 可以通过sheet_name来指定读取的表单
         data = df.head()  # 默认读取前5行的数据
         print("获取到所有的值:\n{0}".format(data))  # 格式化输出
@@ -46,7 +46,7 @@ class Test2():
         # 方法三：通过表单索引来指定要访问的表单，0表示第一个表单
         # 也可以采用表单名和索引的双重方式来定位表单
         # 也可以同时定位多个表单，方式都罗列如下所示
-        df = pd.read_excel('F:\\Profile\\User\Desktop\\2018全国医院信息化建设标准与规范(试行).xls', sheet_name=['Sheet1', 'Sheet2'])  # 可以通过表单名同时指定多个
+        df = pd.read_excel('2018全国医院信息化建设标准与规范(试行).xls', sheet_name=['Sheet1', 'Sheet2'])  # 可以通过表单名同时指定多个
         # df=pd.read_excel('lemon.xlsx',sheet_name=0)#可以通过表单索引来指定读取的表单
         # df=pd.read_excel('lemon.xlsx',sheet_name=['python',1])#可以混合的方式来指定
         # df=pd.read_excel('lemon.xlsx',sheet_name=[1,2])#可以通过索引 同时指定多个
@@ -55,7 +55,7 @@ class Test2():
 class Test3():
     def test1(self):
         # 1：读取指定行
-        df = pd.read_excel('F:\\Profile\\User\Desktop\\2018全国医院信息化建设标准与规范(试行).xls')  # 这个会直接默认读取到这个Excel的第一个表单
+        df = pd.read_excel('2018全国医院信息化建设标准与规范(试行).xls')  # 这个会直接默认读取到这个Excel的第一个表单
         data = df.iloc[0].values  # 0表示第一行 这里读取数据并不包含表头，要注意哦！
         print("读取指定行的数据：\n{0}".format(data))
         print('\n-------------------------------------------------------------------------')
