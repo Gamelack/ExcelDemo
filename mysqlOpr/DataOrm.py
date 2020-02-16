@@ -14,8 +14,6 @@ class 章节():  # 继承基类
     __tablename__ = '章节'
     章节id = Column(Integer, primary_key=True)
     章节名称 = Column(String(200))
-    起始行索引 = Column(Integer, nullable=False,unique=True)
-    结束列索引 = Column(Integer, nullable=False,unique=True)
     录入时间 = Column(DateTime)
 class 指标():  # 继承基类
     __tablename__ = '指标'
@@ -24,8 +22,6 @@ class 指标():  # 继承基类
     指标内容 = Column(String(200))
     上级指标id = Column(Integer)
     所属章节 = Column(Integer, nullable=False,unique=True)
-    起始行索引 = Column(Integer, nullable=False, unique=True)
-    结束列索引 = Column(Integer, nullable=False, unique=True)
     指标说明 = Column(String(1024))
     录入时间 = Column(DateTime)
 class 具体要求():  # 继承基类
