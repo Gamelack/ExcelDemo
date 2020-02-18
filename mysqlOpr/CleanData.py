@@ -1,31 +1,35 @@
 import numpy as np
 import pandas as pd
 import re
-import time
+from math import isnan
 
 
-class 章节:
-    "这是Student类的说明"  # __doc__
-
-    objCount = 0  # 类的静态变量
-
-    def __init__(self, 章节id, 章节名称, 起始行索引, 结束列索引, 录入时间):  # 构造函数，创建类的实例调用
-        self.章节id = 章节id
-        self.章节名称 = 章节名称
-        self.起始行索引 = 起始行索引
-        self.结束列索引 = 结束列索引
-        self.录入时间 = 录入时间
-
+class 章节与一级指标(object):
     def __init__(self):  # 构造函数，创建类的实例调用
-        self.章节id = None
-        self.章节名称 = None
-        self.起始行索引 = None
-        self.结束列索引 = None
-        self.录入时间 = None
+        self.章节与一级指标字典 = {}
+
+
+class 一级指标与二级指标(object):
+    def __init__(self, ):  # 构造函数，创建类的实例调用
+        self.一级与二级指标字典 = {}
+
+
+class 二级与三级指标(object):
+    def __init__(self, ):  # 构造函数，创建类的实例调用
+        self.二级与三级指标字典 = {}
+
+
+class 三级与细则(object):
+    def __init__(self):  # 构造函数，创建类的实例调用
+        self.三级指标名称 = ''
+        self.指标描述 = ''
+        self.指标细则列表 = []
+        self.医院等级要求列表 = []
 
 
 def prn_obj(obj):
     print('\n'.join(['%s:%s' % item for item in obj.__dict__.items()]) + "\n")
+
 
 
 class CleanData:
@@ -37,77 +41,153 @@ class CleanData:
         df = pd.read_excel('2018全国医院信息化建设标准与规范(试行).xls', header=None)  # 这个会直接默认读取到这个Excel的第一个表单
         # 1.前三列填充数据
         df[[0, 1, 2]] = df[[0, 1, 2]].ffill()
-        # 2.获取章节的信息
-        # 章信息 = df[df[0].str.contains('第.{1,4}章', case=False, flags=0, na=np.nan, regex=True)]
-        # for i in 章信息.index.tolist():
-        #     zj = 章节()
-        #     zj.起始行索引 = i
-        #     zj.录入时间 = time.localtime(time.time())
-        #     zj.章节名称 = df.iloc[i, 0]
-            # prn_obj(zj)
-
-        # 3.去除第三列为空的行(章节名也被去掉)
-        # df = df.dropna(subset=[3])
-        # print(df[0:20])
-
         # 4.指标操作：获取到前三列中的指标数据；获取第四列的指标描述
         # print(df[[0,1,2]].values)
+        date = 章节与一级指标()
+        章节名称 = ''
         for index, row in df.iterrows():
             # 清除前三列中数字字符
             self.clearStartByChineseDigital(row, 0)
             self.clearStartByChineseDigital(row, 1)
             self.clearStartByChineseDigital(row, 2)
-            if  self.is章节(row[0]):
-                print(self.is章节(row[0]).group())
+            章节判断 = self.is章节(row[0])
+            if 章节判断:
+                if not date.章节与一级指标字典.keys().__contains__(章节判断.group()):
+                    # 添加章节名
+                    date.章节与一级指标字典[章节判断.group()] = {}
+                    章节名称 = 章节判断.group()
+            #判断第四列这个单元格是否是空项
+            if row.isna()[3]:
                 continue
-            # # 获取指标的描述
-            # print(str(row[0])+"-"+str(row[1])+"-"+str(row[2])+"-" + '\n\n')
-            if isinstance(row[3],str):
+            # 添加一级指标
+            if not date.章节与一级指标字典[章节名称].keys().__contains__(row[0]):
+                date.章节与一级指标字典[章节名称][row[0]] = {}
+            # 添加二级指标
+            if not date.章节与一级指标字典[章节名称][row[0]].keys().__contains__(row[1]):
+                date.章节与一级指标字典[章节名称][row[0]][row[1]] = {}
+            # 添加三级指标，并新建三级指标对应对象
+            三级 = 三级与细则()
+            if not date.章节与一级指标字典[章节名称][row[0]][row[1]].keys().__contains__(row[2]):
+                date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]] = 三级
+            三级.三级指标名称 = row[2]
+            if isinstance(row[3], str):
                 rowCloumn3 = self.clearSpace(row[3])
-                # 获取指标描述
-                desc = self.getIndicatorsDescription(rowCloumn3[0])
-                print("指标描述："+desc)
-                for subRow3 in rowCloumn3:
-                    temp = self.isRequestDetails(subRow3)
-                    if temp:
-                        print("具体实现条款：" + temp.group())
-                    temp = self.getLevelRequir(subRow3)
-                    if temp:
-                        print("各级医院要求："+temp.group())
+                # 指标描述判断，默认取第一条
+                desc = self.getIndicatorsDescription(rowCloumn3)
+                三级.指标描述 = desc
 
-        # else:
-        #     print(row[0] + "\t" + row[1] + "\t" + row[2] + "\t" + row[3])
+                # 获取细则列表：list
+                indicatorsList = self.getIndicatorsList(rowCloumn3)
+                三级.指标细则列表 = indicatorsList
 
+                # 获取医院级别要求：list
+                leveHosReqList = self.getHospitalRequireList(rowCloumn3)
+                三级.医院等级要求列表 = leveHosReqList
+            # print(str(date.章节与一级指标字典[章节名称][row[0]][row[1]]))
+            # print('\t\t\t'+str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].三级指标名称))
+            # print('\t\t\t\t' + str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].指标描述))
+            # print('\t\t\t\t' + str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].指标细则列表))
+            # print('\t\t\t\t' + str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].医院等级要求列表))
+            # print('\n')
+        a = date.__dict__.keys()
+        for b in a:
+            # print("1"+b)
+            c =date.__dict__[b].keys()
+            for d in c:
+                # print('\t2.'+d)
+                e = date.__dict__[b][d].keys()
+                for f in e:
+                    # print('\t\t3.'+f)
+                    g = date.__dict__[b][d][f].keys()
+                    for h in g:
+                        print('\t\t\t4.' + h)
+                        i = date.__dict__[b][d][f][h]
+                        print(i)
+
+
+        # self.printObj(date)
     def clearSpace(self, s):
         '''去除空格、换行、制表符，然后去掉最后一个字符（“。”），再按“。”进行分割，获取到一个指标具体内容和要求的数组'''
-        print(s)
         return re.split(r'。', re.sub('\s', '', s)[:-1])
+
     def clearStartByChineseDigital(self, row, index):
         '''删除开头序号标注：“23、为人民服务”变成“为人民服务”'''
-        if len(row)<=index or not isinstance(row[index],str) :
-            return '';
+        if len(row) <= index or not isinstance(row[index], str):
+            return None
         b = re.compile(r'^[一二三四五六七八九十1234567890\n()（）、]*')  # 编译正则表达式
         row[index] = b.sub(r'', row[index])
         return row[index]
 
-    def is章节(self,s):
+    def is章节(self, s):
         result = re.match(r'第[一二三四五六七八九十1234567890].{1,4}.+', s)
         return result
+
     def getIndicatorsDescription(self, s):
         '''获取指标描述'''
-        if self.isRequestDetails(s) is None:
-            return s
-        else:
-            return ''
+        index = 0
+        for clomunIndex in range(len(s)):
+            # 指标描述判断，默认取第一条
+            temp = self.isRequestDetails(s[clomunIndex])
+            if temp:
+                index = clomunIndex
+                break
+        descStr = ''
+        for i in range(index):
+            descStr = descStr + s[i] + "。"
+        return descStr
+
+    def getIndicatorsList(self, s):
+        '''获取指标条目'''
+        startIndex = 0
+        for clomunIndex in range(len(s)):
+            # 指标描述判断，默认取第一条
+            temp = self.isRequestDetails(s[clomunIndex])
+            if temp:
+                startIndex = clomunIndex
+                break
+        endIndex = len(s)
+        for clomunIndex in range(len(s)):
+            # 指标描述判断，默认取第一条
+            temp = self.getLevelRequire(s[clomunIndex])
+            if temp:
+                endIndex = clomunIndex
+                break
+        list = []
+        for i in range(startIndex, endIndex):
+            list.append(s[i])
+        return list
+
+    def getHospitalRequireList(self, s):
+        '''获取指标条目'''
+        startIndex = 0
+        for clomunIndex in range(len(s)):
+            # 指标描述判断，默认取第一条
+            temp = self.getLevelRequire(s[clomunIndex])
+            if temp:
+                startIndex = clomunIndex
+                break
+
+        endIndex = len(s)
+        for clomunIndex in range(len(s)):
+            # 指标描述判断，默认取第一条
+            temp = self.getLevelRequire(s[clomunIndex])
+            if temp:
+                endIndex = clomunIndex
+        list = []
+        for i in range(startIndex, endIndex):
+            list.append(s[i])
+        return list
+
     def isRequestDetails(self, s):
-        '''要求的具体条款'''
-        if isinstance(s,str):
-            return ''
-        result = re.match(r'[①②③④⑤⑥⑦⑧⑨⑩)].+|.{0,3}具备.+|.{0,3}支持.+|.{0,3}提供.+|.{0,3}支持.+', s)
+        '''文本是否是具体的条款'''
+        if not isinstance(s, str):
+            return None
+        result = re.match(r'[①②③④⑤⑥⑦⑧⑨⑩)].+|.{0,3}具备.+|.{0,3}提供.+', s)
         return result
-    def getLevelRequir(self,s):
+
+    def getLevelRequire(self, s):
         '''匹配是否是医院级别要求'''
-        result = re.match(r'^[一二三四五六七]级.+', s)
+        result = re.match(r'^[一二三四五六七八九十]级.+', s)
         return result
 
     def 测试数据(self):
@@ -116,6 +196,40 @@ class CleanData:
         ccc = np.random.uniform(1, 1000, 3000)
         ddd = np.random.uniform(1, 1000, 3000)
         return pd.DataFrame({'aaa': aaa, 'bbb': bbb, 'ccc': ccc, 'ddd': ddd, 'eee': None})
+
+    def printObj(self, obj,*countSpaceList):
+        if isinstance(obj, int):
+            for i in obj:
+                print(i + "\t" + self.printObj(obj[i]))
+        if isinstance(obj, list):
+            for i in obj:
+                print(i + "\t" + self.printObj(obj[i]))
+        if isinstance(obj, tuple):
+            for i in obj:
+                print(i + "\t" + self.printObj(obj[i]))
+        if isinstance(obj, dict):
+            for i in obj:
+                print(i+"\t"+self.printObj(obj[i]))
+        if isinstance(obj, str):
+            print(obj)
+        else:
+            ls = obj.__dir__()
+            for i in ls:
+                if isinstance(i, str):
+                    b = re.match(r'__.+', i)
+                    if not b:
+                        print(i,end='')
+                else:
+                    if countSpaceList:
+                        lenth=0
+                    else:
+                        lenth = countSpaceList[0]
+                    for ll in lenth:
+                        print('\t',end='')
+                    prn_obj(i,lenth+1)
+        print('')
+
+
 
 
 temp = CleanData()
