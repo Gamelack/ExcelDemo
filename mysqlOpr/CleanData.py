@@ -9,14 +9,14 @@ class 章节与一级指标(object):
         self.章节与一级指标字典 = {}
 
 
-class 一级指标与二级指标(object):
-    def __init__(self, ):  # 构造函数，创建类的实例调用
-        self.一级与二级指标字典 = {}
-
-
-class 二级与三级指标(object):
-    def __init__(self, ):  # 构造函数，创建类的实例调用
-        self.二级与三级指标字典 = {}
+# class 一级指标与二级指标(object):
+#     def __init__(self, ):  # 构造函数，创建类的实例调用
+#         self.一级与二级指标字典 = {}
+#
+#
+# class 二级与三级指标(object):
+#     def __init__(self, ):  # 构造函数，创建类的实例调用
+#         self.二级与三级指标字典 = {}
 
 
 class 三级与细则(object):
@@ -34,10 +34,12 @@ def prn_obj(obj):
 
 class CleanData:
     def clean(self):
-        # 1：读取指定行
+        #设置打印数据参数
         pd.set_option('display.max_columns', 1000)
         pd.set_option('display.width', 1000)
         pd.set_option('display.max_colwidth', 1000)
+        # 1：读取指定行
+
         df = pd.read_excel('2018全国医院信息化建设标准与规范(试行).xls', header=None)  # 这个会直接默认读取到这个Excel的第一个表单
         # 1.前三列填充数据
         df[[0, 1, 2]] = df[[0, 1, 2]].ffill()
@@ -57,7 +59,7 @@ class CleanData:
                     date.章节与一级指标字典[章节判断.group()] = {}
                     章节名称 = 章节判断.group()
             #判断第四列这个单元格是否是空项
-            if row.isna()[3]:
+            if row.isna()[1] or row.isna()[2] or row.isna()[3]:
                 continue
             # 添加一级指标
             if not date.章节与一级指标字典[章节名称].keys().__contains__(row[0]):
@@ -83,29 +85,12 @@ class CleanData:
                 # 获取医院级别要求：list
                 leveHosReqList = self.getHospitalRequireList(rowCloumn3)
                 三级.医院等级要求列表 = leveHosReqList
-            # print(str(date.章节与一级指标字典[章节名称][row[0]][row[1]]))
-            # print('\t\t\t'+str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].三级指标名称))
-            # print('\t\t\t\t' + str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].指标描述))
-            # print('\t\t\t\t' + str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].指标细则列表))
-            # print('\t\t\t\t' + str(date.章节与一级指标字典[章节名称][row[0]][row[1]][row[2]].医院等级要求列表))
-            # print('\n')
-        a = date.__dict__.keys()
-        for b in a:
-            # print("1"+b)
-            c =date.__dict__[b].keys()
-            for d in c:
-                # print('\t2.'+d)
-                e = date.__dict__[b][d].keys()
-                for f in e:
-                    # print('\t\t3.'+f)
-                    g = date.__dict__[b][d][f].keys()
-                    for h in g:
-                        print('\t\t\t4.' + h)
-                        i = date.__dict__[b][d][f][h]
-                        print(i)
 
 
-        # self.printObj(date)
+        #遍历输出自定义类对象
+        self.printObj(date,0,True)
+        # self.spliteReqireContent(date)
+    #
     def clearSpace(self, s):
         '''去除空格、换行、制表符，然后去掉最后一个字符（“。”），再按“。”进行分割，获取到一个指标具体内容和要求的数组'''
         return re.split(r'。', re.sub('\s', '', s)[:-1])
@@ -119,6 +104,7 @@ class CleanData:
         return row[index]
 
     def is章节(self, s):
+        '''判断是否是章节名称'''
         result = re.match(r'第[一二三四五六七八九十1234567890].{1,4}.+', s)
         return result
 
@@ -189,49 +175,62 @@ class CleanData:
         '''匹配是否是医院级别要求'''
         result = re.match(r'^[一二三四五六七八九十]级.+', s)
         return result
+    def spliteReqireContent(self,date):
+        keys1 = date.章节与一级指标字典.keys()
+        for key1 in keys1:
+            # print(key1)
+            keys2 = date.章节与一级指标字典[key1].keys()
+            for key2 in keys2:
+                # print("\t"+key2)
+                keys3 = date.章节与一级指标字典[key1][key2].keys()
+                for key3 in keys3:
+                    # print("\t"+"\t"+key3)
+                    keys4 = date.章节与一级指标字典[key1][key2][key3].keys()
+                    for key4 in keys4:
+                        print("\t"+"\t"+"\t"+key4)
+                        values = date.章节与一级指标字典[key1][key2][key3][key4].__dict__
+                        for value in values:
+                            print("\t"+"\t"+"\t"+"\t"+str(value)+":"+str(date.章节与一级指标字典[key1][key2][key3][key4].__dict__[value]))
+    def statisticalFrequency(self,list):
+        '''统计字符串列表中开头，结尾，或其他地方频率最高的词语'''
 
-    def 测试数据(self):
-        aaa = np.random.uniform(1, 1000, 3000)
-        bbb = np.random.uniform(1, 1000, 3000)
-        ccc = np.random.uniform(1, 1000, 3000)
-        ddd = np.random.uniform(1, 1000, 3000)
-        return pd.DataFrame({'aaa': aaa, 'bbb': bbb, 'ccc': ccc, 'ddd': ddd, 'eee': None})
-
-    def printObj(self, obj,*countSpaceList):
-        if isinstance(obj, int):
+    def printObj(self, obj,countSpace=0,showFiledName=False):
+        '''输出所有数据类型的字段值'''
+        pd.set_option('display.max_columns', 4000)
+        pd.set_option('display.width', 4000)
+        pd.set_option('display.max_colwidth', 8000)
+        if countSpace is None or countSpace<=0:
+            countSpace=0
+        space=''
+        for i in range(countSpace):
+            space=space+'\t'
+        if isinstance(obj, (str,int)):
+            print(space, end='')
+            print(str(obj))
+        elif isinstance(obj, (list,tuple,set)):
             for i in obj:
-                print(i + "\t" + self.printObj(obj[i]))
-        if isinstance(obj, list):
-            for i in obj:
-                print(i + "\t" + self.printObj(obj[i]))
-        if isinstance(obj, tuple):
-            for i in obj:
-                print(i + "\t" + self.printObj(obj[i]))
-        if isinstance(obj, dict):
-            for i in obj:
-                print(i+"\t"+self.printObj(obj[i]))
-        if isinstance(obj, str):
-            print(obj)
-        else:
-            ls = obj.__dir__()
-            for i in ls:
-                if isinstance(i, str):
-                    b = re.match(r'__.+', i)
-                    if not b:
-                        print(i,end='')
-                else:
-                    if countSpaceList:
-                        lenth=0
-                    else:
-                        lenth = countSpaceList[0]
-                    for ll in lenth:
-                        print('\t',end='')
-                    prn_obj(i,lenth+1)
-        print('')
-
-
-
+                self.printObj(i,countSpace)
+        elif isinstance(obj,dict):
+            keys = obj.keys()
+            for key in keys:
+                self.printObj(key, countSpace)
+                self.printObj(obj[key], countSpace+1)
+        # 如果是类对象
+        elif isinstance(obj,object):
+            # print(dir(obj))#所有字段、方法名等名称
+            # print(obj.__dir__())#所有字段、方法名等名称
+            # print(obj.__dict__.items())
+            for key in dir(obj):
+                isOK = re.match(r'__.+', key)
+                if hasattr(obj, key) and not isOK:  # 检查实例是否有这个属性
+                    if showFiledName:
+                        print(space+str(key),end=':')
+                    # self.printObj(str(key) ,countSpace)
+                    self.printObj(getattr(obj, key), countSpace+1)
 
 temp = CleanData()
 
 temp.clean()
+
+# test1()
+print('\t'+'over')
