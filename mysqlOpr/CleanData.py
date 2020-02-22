@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import re
 from math import isnan
+from mysqlOpr.词频统计 import JieBaUtil
 
 
 class 章节与一级指标(object):
@@ -88,9 +89,13 @@ class CleanData:
 
 
         #遍历输出自定义类对象
-        self.printObj(date,0,True)
-        # self.spliteReqireContent(date)
-    #
+        # self.printObj(date,0,True)
+        #获取需要分词的数据
+        wordsList = self.spliteReqireContent(date)
+        # 分词
+        jie = JieBaUtil()
+        words  = jie.读写文章分词统计全(wordsList)
+        print(words)
     def clearSpace(self, s):
         '''去除空格、换行、制表符，然后去掉最后一个字符（“。”），再按“。”进行分割，获取到一个指标具体内容和要求的数组'''
         return re.split(r'。', re.sub('\s', '', s)[:-1])
@@ -176,6 +181,7 @@ class CleanData:
         result = re.match(r'^[一二三四五六七八九十]级.+', s)
         return result
     def spliteReqireContent(self,date):
+        resultList=[]
         keys1 = date.章节与一级指标字典.keys()
         for key1 in keys1:
             # print(key1)
@@ -187,10 +193,19 @@ class CleanData:
                     # print("\t"+"\t"+key3)
                     keys4 = date.章节与一级指标字典[key1][key2][key3].keys()
                     for key4 in keys4:
-                        print("\t"+"\t"+"\t"+key4)
+                        # print("\t"+"\t"+"\t"+key4)
                         values = date.章节与一级指标字典[key1][key2][key3][key4].__dict__
                         for value in values:
-                            print("\t"+"\t"+"\t"+"\t"+str(value)+":"+str(date.章节与一级指标字典[key1][key2][key3][key4].__dict__[value]))
+                            # print("\t"+"\t"+"\t"+"\t"+str(value)+":"+str(date.章节与一级指标字典[key1][key2][key3][key4].__dict__[value]))
+                            self.unionList(resultList,date.章节与一级指标字典[key1][key2][key3][key4].__dict__[value])
+        return resultList
+    def unionList(self,mylist,subList):
+        if isinstance(subList,(list,tuple)):
+            for line in subList:
+                self.unionList(mylist,line)
+        elif isinstance(subList,(int,str)):
+            mylist.append(subList)
+
     def statisticalFrequency(self,list):
         '''统计字符串列表中开头，结尾，或其他地方频率最高的词语'''
 
